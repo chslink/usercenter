@@ -23,8 +23,33 @@ func Gen() error {
 	return sh.Run("wire", "./...")
 }
 
+func getProto(basePath string) ([]string, error) {
+	var files []string
+	err := filepath.Walk(basePath, func(path string, info fs.FileInfo, err error) error {
+		if info.IsDir() {
+			return nil
+		}
+		if filepath.Ext(path) == ".proto" {
+			files = append(files, path)
+		}
+		return nil
+	})
+	return files, err
+}
 func API() error {
-	return sh.Run("swag", "init")
+	files, err := getProto("api")
+	if err != nil {
+		return err
+	}
+	fmt.Println("API files:", files)
+	args := []string{"--proto_path=./api", "--proto_path=./third_party",
+		"--go_out=paths=source_relative:./api",
+		"--go-http_out=paths=source_relative:./api",
+		"--go-grpc_out=paths=source_relative:./api",
+		"--openapi_out=fq_schema_naming=true,default_response=false:.",
+	}
+	args = append(args, files...)
+	return sh.Run("protoc", args...)
 }
 
 func Init() error {
@@ -43,29 +68,12 @@ func Init() error {
 	return err
 }
 
-func getInternalProto() ([]string, error) {
-	var files []string
-	basePath := "internal"
-	err := filepath.Walk(basePath, func(path string, info fs.FileInfo, err error) error {
-		if info.IsDir() {
-			return nil
-		}
-		if filepath.Ext(path) == ".proto" {
-			files = append(files, path)
-		}
-		return nil
-	})
-	return files, err
-}
-
 func Config() error {
-	internalProto, err := getInternalProto()
+	internalProto, err := getProto("internal")
 	if err != nil {
 		return err
 	}
-	fmt.Println(internalProto)
 	args := []string{"--proto_path=./internal", "--proto_path=./third_party", "--go_out=paths=source_relative:./internal"}
 	args = append(args, internalProto...)
-	fmt.Printf("args: %v\n", args)
 	return sh.Run("protoc", args...)
 }
