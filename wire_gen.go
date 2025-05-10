@@ -9,7 +9,11 @@ package main
 import (
 	"github.com/go-kratos/kratos/v2"
 	"github.com/go-kratos/kratos/v2/log"
+	"usercenter/bc"
+	"usercenter/bc/greeter"
 	"usercenter/config"
+	"usercenter/pkg"
+	"usercenter/pkg/server"
 )
 
 import (
@@ -19,6 +23,16 @@ import (
 // Injectors from wire.go:
 
 // wireApp init kratos application.
-func wireApp(conf *config.Config, logger log.Logger) (*kratos.App, func(), error) {
-	return nil, nil, nil
+func wireApp(configConfig *config.Config, logger log.Logger) (*kratos.App, func(), error) {
+	serverConfig, err := pkg.CopyServerConfig(configConfig)
+	if err != nil {
+		return nil, nil, err
+	}
+	grpcServer := server.NewGRPCServer(serverConfig, logger)
+	httpServer := server.NewHTTPServer(serverConfig, logger)
+	greeterGreeter := greeter.NewGreeter()
+	loader := bc.LoadServices(httpServer, grpcServer, logger, greeterGreeter)
+	app := newApp(logger, grpcServer, httpServer, loader)
+	return app, func() {
+	}, nil
 }

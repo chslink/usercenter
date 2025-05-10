@@ -4,6 +4,7 @@ import (
 	"flag"
 	"os"
 
+	"usercenter/bc"
 	"usercenter/config"
 
 	"github.com/go-kratos/kratos/v2"
@@ -28,10 +29,10 @@ var (
 )
 
 func init() {
-	flag.StringVar(&flagconf, "conf", "config", "config path, eg: -conf config.yaml")
+	flag.StringVar(&flagconf, "conf", "config/config.yaml", "config path, eg: -conf config.yaml")
 }
 
-func newApp(logger log.Logger, gs *grpc.Server, hs *http.Server) *kratos.App {
+func newApp(logger log.Logger, gs *grpc.Server, hs *http.Server, loader *bc.Loader) *kratos.App {
 	return kratos.New(
 		kratos.ID(id),
 		kratos.Name(Name),

@@ -69,11 +69,11 @@ func Init() error {
 }
 
 func Config() error {
-	internalProto, err := getProto("internal")
+	internalProto, err := getProto("pkg")
 	if err != nil {
 		return err
 	}
-	args := []string{"--proto_path=./internal", "--proto_path=./third_party", "--go_out=paths=source_relative:./internal"}
+	args := []string{"--proto_path=./pkg", "--proto_path=./third_party", "--go_out=paths=source_relative:./pkg"}
 	args = append(args, internalProto...)
 	return sh.Run("protoc", args...)
 }

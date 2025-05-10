@@ -6,18 +6,16 @@
 package main
 
 import (
-	"usercenter/config"
-	"usercenter/internal/biz"
-	"usercenter/internal/data"
-	"usercenter/internal/server"
-	"usercenter/internal/service"
-
 	"github.com/go-kratos/kratos/v2"
 	"github.com/go-kratos/kratos/v2/log"
 	"github.com/google/wire"
+
+	"usercenter/bc"
+	"usercenter/config"
+	"usercenter/pkg"
 )
 
 // wireApp init kratos application.
 func wireApp(*config.Config, log.Logger) (*kratos.App, func(), error) {
-	panic(wire.Build(server.ProviderSet, data.ProviderSet, biz.ProviderSet, service.ProviderSet, newApp))
+	panic(wire.Build(pkg.Provider, bc.Provider, newApp))
 }
