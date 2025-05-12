@@ -10,9 +10,10 @@ import (
 	"github.com/go-kratos/kratos/v2"
 	"github.com/go-kratos/kratos/v2/log"
 	"usercenter/bc"
-	"usercenter/bc/greeter"
+	"usercenter/bc/user"
 	"usercenter/config"
 	"usercenter/pkg"
+	"usercenter/pkg/db"
 	"usercenter/pkg/server"
 )
 
@@ -24,15 +25,35 @@ import (
 
 // wireApp init kratos application.
 func wireApp(configConfig *config.Config, logger log.Logger) (*kratos.App, func(), error) {
-	serverConfig, err := pkg.CopyServerConfig(configConfig)
+	serverConfig, err := pkg.NewServerConfig(configConfig)
 	if err != nil {
 		return nil, nil, err
 	}
-	grpcServer := server.NewGRPCServer(serverConfig, logger)
 	httpServer := server.NewHTTPServer(serverConfig, logger)
-	greeterGreeter := greeter.NewGreeter()
-	loader := bc.LoadServices(httpServer, grpcServer, logger, greeterGreeter)
-	app := newApp(logger, grpcServer, httpServer, loader)
-	return app, func() {
+	grpcServer := server.NewGRPCServer(serverConfig, logger)
+	serverServer := server.NewServer(httpServer, grpcServer)
+	dbConfig, err := pkg.NewDbConfig(configConfig)
+	if err != nil {
+		return nil, nil, err
+	}
+	bunDB, err := db.New(dbConfig)
+	if err != nil {
+		return nil, nil, err
+	}
+	userSrv := user.NewSrv()
+	app := user.NewApp(userSrv)
+	module, cleanup, err := user.NewModule(app, serverServer)
+	if err != nil {
+		return nil, nil, err
+	}
+	loader, cleanup2, err := bc.NewLoader(serverServer, bunDB, module)
+	if err != nil {
+		cleanup()
+		return nil, nil, err
+	}
+	kratosApp := newApp(logger, serverServer, loader)
+	return kratosApp, func() {
+		cleanup2()
+		cleanup()
 	}, nil
 }

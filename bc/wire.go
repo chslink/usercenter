@@ -3,10 +3,10 @@ package bc
 import (
 	"github.com/google/wire"
 
-	"usercenter/bc/greeter"
+	"usercenter/bc/user"
 )
 
 var Provider = wire.NewSet(
-	greeter.Provider,
-	LoadServices,
+	user.Provider,
+	NewLoader,
 )

@@ -1,0 +1,66 @@
+syntax = "proto3";
+package usercenter.user;
+import "google/api/annotations.proto";
+import "common/common.proto";
+
+option go_package = "usercenter/api/user;user";
+service UserService {
+  // 获取当前用户信息
+  rpc GetCurrentUser(common.Empty) returns (common.User) {
+    option (google.api.http) = {
+      get: "/v1/users/me"
+    };
+  }
+
+  // 更新用户信息
+  rpc UpdateUser(UpdateUserRequest) returns (common.User) {
+    option (google.api.http) = {
+      put: "/v1/users/me"
+      body: "*"
+    };
+  }
+}
+
+message UpdateUserRequest {
+  string nickname = 1;
+  string avatar = 2;
+  int32 gender = 3;  // 0-未知 1-男 2-女
+  string birthday = 4;
+}
+
+// Admin 管理接口
+
+service UserAdminService {
+  // 用户列表查询
+  rpc ListUsers(ListUsersRequest) returns (ListUsersResponse) {
+    option (google.api.http) = {
+      get: "/v1/admin/users"
+    };
+  }
+
+  // 封禁/解封用户
+  rpc BanUser(BanUserRequest) returns (common.User) {
+    option (google.api.http) = {
+      post: "/v1/admin/users/{user_id}/ban"
+      body: "*"
+    };
+  }
+}
+
+message ListUsersRequest {
+  int32 page = 1;
+  int32 page_size = 2;
+  string mobile = 3;
+  string nickname = 4;
+}
+
+message ListUsersResponse {
+  repeated common.User users = 1;
+  int32 total = 2;
+}
+
+message BanUserRequest {
+  string user_id = 1;
+  bool is_banned = 2;
+  string reason = 3; // 封禁原因
+}

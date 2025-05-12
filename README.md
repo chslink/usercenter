@@ -1,51 +1,13 @@
-# Kratos Project Template
+# UserCenter OpenSource
+开源用户中心 没事干，用自己觉得比较良好的架构写一个开源实现的用户中心服务
 
-## Install Kratos
-```
-go install github.com/go-kratos/kratos/cmd/kratos/v2@latest
-```
-## Create a service
-```
-# Create a template project
-kratos new server
+## 基础架构
 
-cd server
-# Add a proto template
-kratos proto add api/server/server.proto
-# Generate the proto code
-kratos proto client api/server/server.proto
-# Generate the source code of service by proto file
-kratos proto server api/server/server.proto -t internal/service
-
-go generate ./...
-go build -o ./bin/ ./...
-./bin/server -conf ./configs
-```
-## Generate other auxiliary files by Makefile
-```
-# Download and update dependencies
-make init
-# Generate API files (include: pb.go, http, grpc, validate, swagger) by proto file
-make api
-# Generate all files
-make all
-```
-## Automated Initialization (wire)
-```
-# install wire
-go get github.com/google/wire/cmd/wire
-
-# generate wire
-cd cmd/server
-wire
-```
-
-## Docker
-```bash
-# build
-docker build -t <your-docker-image-name> .
-
-# run
-docker run --rm -p 8000:8000 -p 9000:9000 -v </path/to/your/config>:/data/conf <your-docker-image-name>
-```
+- kratos, 对http/grpc服务支持友好，架构清晰明了
+- mage, Go语言实现的make替代，而且可以用go语言实现各类脚本，更加高效
+- viper, 配置管理，支持变量注入，便于容器部署
+- wire, 依赖注入，减少人工管理依赖
+- bun, 轻量级orm，支持sql合并
+- ddd, 业务层使用精简DDD架构
+- docker, 容器化部署
 

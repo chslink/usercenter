@@ -3,20 +3,32 @@
 
 openapi: 3.0.3
 info:
-    title: Greeter API
-    description: The greeting service definition.
+    title: ""
     version: 0.0.1
 paths:
-    /helloworld/{name}:
+    /v1/admin/users:
         get:
             tags:
-                - Greeter
-            description: Sends a greeting
-            operationId: Greeter_SayHello
+                - UserAdminService
+            description: 用户列表查询
+            operationId: UserAdminService_ListUsers
             parameters:
-                - name: name
-                  in: path
-                  required: true
+                - name: page
+                  in: query
+                  schema:
+                    type: integer
+                    format: int32
+                - name: pageSize
+                  in: query
+                  schema:
+                    type: integer
+                    format: int32
+                - name: mobile
+                  in: query
+                  schema:
+                    type: string
+                - name: nickname
+                  in: query
                   schema:
                     type: string
             responses:
@@ -25,14 +37,281 @@ paths:
                     content:
                         application/json:
                             schema:
-                                $ref: '#/components/schemas/helloworld.v1.HelloReply'
+                                $ref: '#/components/schemas/usercenter.user.ListUsersResponse'
+    /v1/admin/users/{userId}/ban:
+        post:
+            tags:
+                - UserAdminService
+            description: 封禁/解封用户
+            operationId: UserAdminService_BanUser
+            parameters:
+                - name: userId
+                  in: path
+                  required: true
+                  schema:
+                    type: string
+            requestBody:
+                content:
+                    application/json:
+                        schema:
+                            $ref: '#/components/schemas/usercenter.user.BanUserRequest'
+                required: true
+            responses:
+                "200":
+                    description: OK
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/usercenter.common.User'
+    /v1/auth/login/mobile_code:
+        post:
+            tags:
+                - AuthService
+            description: 手机号+验证码登录
+            operationId: AuthService_LoginByMobileCode
+            requestBody:
+                content:
+                    application/json:
+                        schema:
+                            $ref: '#/components/schemas/usercenter.auth.LoginMobileRequest'
+                required: true
+            responses:
+                "200":
+                    description: OK
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/usercenter.auth.AuthResponse'
+    /v1/auth/login/mobile_pwd:
+        post:
+            tags:
+                - AuthService
+            description: 手机号+密码登录
+            operationId: AuthService_LoginByMobilePwd
+            requestBody:
+                content:
+                    application/json:
+                        schema:
+                            $ref: '#/components/schemas/usercenter.auth.LoginMobileRequest'
+                required: true
+            responses:
+                "200":
+                    description: OK
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/usercenter.auth.AuthResponse'
+    /v1/auth/password/reset:
+        post:
+            tags:
+                - AuthService
+            description: 忘记密码-重置
+            operationId: AuthService_ResetPassword
+            requestBody:
+                content:
+                    application/json:
+                        schema:
+                            $ref: '#/components/schemas/usercenter.auth.ResetPwdRequest'
+                required: true
+            responses:
+                "200":
+                    description: OK
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/usercenter.auth.ResetPwdResponse'
+    /v1/auth/register/mobile:
+        post:
+            tags:
+                - AuthService
+            description: 手机号+密码注册
+            operationId: AuthService_RegisterByMobile
+            requestBody:
+                content:
+                    application/json:
+                        schema:
+                            $ref: '#/components/schemas/usercenter.auth.RegisterRequest'
+                required: true
+            responses:
+                "200":
+                    description: OK
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/usercenter.auth.AuthResponse'
+    /v1/auth/token/refresh:
+        post:
+            tags:
+                - AuthService
+            description: 刷新访问令牌
+            operationId: AuthService_RefreshToken
+            requestBody:
+                content:
+                    application/json:
+                        schema:
+                            $ref: '#/components/schemas/usercenter.auth.RefreshRequest'
+                required: true
+            responses:
+                "200":
+                    description: OK
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/usercenter.auth.AuthResponse'
+    /v1/security/codes:
+        post:
+            tags:
+                - SecurityService
+            description: 发送验证码（通用接口，可用于注册/登录/找回密码等场景）
+            operationId: SecurityService_SendVerificationCode
+            requestBody:
+                content:
+                    application/json:
+                        schema:
+                            $ref: '#/components/schemas/usercenter.security.SendCodeRequest'
+                required: true
+            responses:
+                "200":
+                    description: OK
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/usercenter.security.SendCodeResponse'
+    /v1/users/me:
+        get:
+            tags:
+                - UserService
+            description: 获取当前用户信息
+            operationId: UserService_GetCurrentUser
+            responses:
+                "200":
+                    description: OK
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/usercenter.common.User'
+        put:
+            tags:
+                - UserService
+            description: 更新用户信息
+            operationId: UserService_UpdateUser
+            requestBody:
+                content:
+                    application/json:
+                        schema:
+                            $ref: '#/components/schemas/usercenter.user.UpdateUserRequest'
+                required: true
+            responses:
+                "200":
+                    description: OK
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/usercenter.common.User'
 components:
     schemas:
-        helloworld.v1.HelloReply:
+        usercenter.auth.AuthResponse:
             type: object
             properties:
-                message:
+                user:
+                    $ref: '#/components/schemas/usercenter.common.User'
+                accessToken:
                     type: string
-            description: The response message containing the greetings
+                refreshToken:
+                    type: string
+                expiresIn:
+                    type: string
+        usercenter.auth.LoginMobileRequest:
+            type: object
+            properties:
+                mobile:
+                    type: string
+                password:
+                    type: string
+                code:
+                    type: string
+                codeKey:
+                    type: string
+        usercenter.auth.RefreshRequest:
+            type: object
+            properties:
+                refreshToken:
+                    type: string
+        usercenter.auth.RegisterRequest:
+            type: object
+            properties:
+                mobile:
+                    type: string
+                password:
+                    type: string
+                code:
+                    type: string
+                codeKey:
+                    type: string
+        usercenter.auth.ResetPwdRequest:
+            type: object
+            properties:
+                mobile:
+                    type: string
+                newPassword:
+                    type: string
+                code:
+                    type: string
+                codeKey:
+                    type: string
+        usercenter.auth.ResetPwdResponse:
+            type: object
+            properties: {}
+        usercenter.common.User:
+            type: object
+            properties: {}
+        usercenter.security.SendCodeRequest:
+            type: object
+            properties:
+                mobile:
+                    type: string
+                scene:
+                    type: string
+        usercenter.security.SendCodeResponse:
+            type: object
+            properties:
+                success:
+                    type: boolean
+                key:
+                    type: string
+        usercenter.user.BanUserRequest:
+            type: object
+            properties:
+                userId:
+                    type: string
+                isBanned:
+                    type: boolean
+                reason:
+                    type: string
+        usercenter.user.ListUsersResponse:
+            type: object
+            properties:
+                users:
+                    type: array
+                    items:
+                        $ref: '#/components/schemas/usercenter.common.User'
+                total:
+                    type: integer
+                    format: int32
+        usercenter.user.UpdateUserRequest:
+            type: object
+            properties:
+                nickname:
+                    type: string
+                avatar:
+                    type: string
+                gender:
+                    type: integer
+                    format: int32
+                birthday:
+                    type: string
 tags:
-    - name: Greeter
+    - name: AuthService
+    - name: SecurityService
+    - name: UserAdminService
+    - name: UserService

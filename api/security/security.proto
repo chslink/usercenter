@@ -1,0 +1,24 @@
+syntax = "proto3";
+package usercenter.security;
+import "google/api/annotations.proto";
+option go_package = "usercenter/api/security;security";
+
+service SecurityService {
+  // 发送验证码（通用接口，可用于注册/登录/找回密码等场景）
+  rpc SendVerificationCode(SendCodeRequest) returns (SendCodeResponse) {
+    option (google.api.http) = {
+      post: "/v1/security/codes"
+      body: "*"
+    };
+  }
+}
+
+message SendCodeRequest {
+  string mobile = 1;    // 手机号（国际号码格式：+8613812345678）
+  string scene = 2;     // 使用场景（register/login/reset_password）
+}
+
+message SendCodeResponse {
+  bool success = 1;
+  string key = 2;       // 验证码关联的key（用于后续验证）
+}

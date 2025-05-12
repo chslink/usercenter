@@ -6,13 +6,11 @@ import (
 
 	"usercenter/bc"
 	"usercenter/config"
+	"usercenter/pkg/server"
 
 	"github.com/go-kratos/kratos/v2"
 	"github.com/go-kratos/kratos/v2/log"
 	"github.com/go-kratos/kratos/v2/middleware/tracing"
-	"github.com/go-kratos/kratos/v2/transport/grpc"
-	"github.com/go-kratos/kratos/v2/transport/http"
-
 	_ "go.uber.org/automaxprocs"
 )
 
@@ -32,18 +30,26 @@ func init() {
 	flag.StringVar(&flagconf, "conf", "config/config.yaml", "config path, eg: -conf config.yaml")
 }
 
-func newApp(logger log.Logger, gs *grpc.Server, hs *http.Server, loader *bc.Loader) *kratos.App {
-	return kratos.New(
+func newApp(logger log.Logger, s *server.Server, loader *bc.Loader) *kratos.App {
+	err := loader.Migrate()
+	if err != nil {
+		panic(err)
+	}
+	loader.StartService()
+
+	app := kratos.New(
 		kratos.ID(id),
 		kratos.Name(Name),
 		kratos.Version(Version),
 		kratos.Metadata(map[string]string{}),
 		kratos.Logger(logger),
 		kratos.Server(
-			gs,
-			hs,
+			s.Grpc,
+			s.Http,
 		),
 	)
+
+	return app
 }
 
 func main() {

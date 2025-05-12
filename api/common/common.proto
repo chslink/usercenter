@@ -1,0 +1,10 @@
+// common.proto - 公共定义
+syntax = "proto3";
+
+package usercenter.common;
+
+option go_package = "usercenter/api/common;common";
+
+message Empty {}
+
+message User{}

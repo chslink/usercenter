@@ -1,0 +1,86 @@
+syntax = "proto3";
+package usercenter.auth;
+import "google/api/annotations.proto";
+import "common/common.proto";
+
+option go_package = "usercenter/api/auth;auth";
+
+service AuthService {
+  // 手机号+密码注册
+  rpc RegisterByMobile(RegisterRequest) returns (AuthResponse) {
+    option (google.api.http) = {
+      post: "/v1/auth/register/mobile"
+      body: "*"
+    };
+  }
+
+  // 手机号+验证码登录
+  rpc LoginByMobileCode(LoginMobileRequest) returns (AuthResponse) {
+    option (google.api.http) = {
+      post: "/v1/auth/login/mobile_code"
+      body: "*"
+    };
+  }
+
+  // 手机号+密码登录
+  rpc LoginByMobilePwd(LoginMobileRequest) returns (AuthResponse) {
+    option (google.api.http) = {
+      post: "/v1/auth/login/mobile_pwd"
+      body: "*"
+    };
+  }
+
+  // 刷新访问令牌
+  rpc RefreshToken(RefreshRequest) returns (AuthResponse) {
+    option (google.api.http) = {
+      post: "/v1/auth/token/refresh"
+      body: "*"
+    };
+  }
+
+  // 忘记密码-重置
+  rpc ResetPassword(ResetPwdRequest) returns (ResetPwdResponse) {
+    option (google.api.http) = {
+      post: "/v1/auth/password/reset"
+      body: "*"
+    };
+  }
+}
+
+message RegisterRequest {
+  string mobile = 1;
+  string password = 2;
+  string code = 3;       // 验证码
+  string code_key = 4;   // 验证码关联的key
+}
+
+message LoginMobileRequest {
+  string mobile = 1;
+  oneof credential {
+    string password = 2;
+    string code = 3;     // 验证码
+    string code_key = 4; // 验证码关联的key
+  }
+}
+
+message AuthResponse {
+  common.User user = 1;
+  string access_token = 2;
+  string refresh_token = 3;
+  int64 expires_in = 4;
+}
+
+message RefreshRequest {
+  string refresh_token = 1;
+}
+
+message ResetPwdRequest {
+  string mobile = 1;
+  string new_password = 2;
+  string code = 3;
+  string code_key = 4;
+}
+
+message ResetPwdResponse{
+
+}
